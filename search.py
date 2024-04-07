@@ -8,7 +8,7 @@ clear_cache=True
 search_tags = [ "developer", "software", "engineer" ]
 
 
-# multiple searches that overlap then filter on all together
+# multiple searches that overlap then you can filter on all of them together
 for search in search_tags:
     save_job_search_descs(driverInstance,search,clear_cache)
 

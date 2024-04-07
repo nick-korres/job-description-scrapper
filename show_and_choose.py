@@ -25,7 +25,7 @@ delete_search_cache(filter_name)
 selected_jobs_ids = [job.linkedin_id for job in selected_jobs_list]
 old_jobs = [job.linkedin_id for job in connected_before]
 new_jobs = [id for id in selected_jobs_ids if id not in old_jobs ]
-
-connect_jobs_to_search(selected_jobs_ids,search_string.id)
+new_search = find_or_create_search(filter_name)
+connect_jobs_to_search(selected_jobs_ids,new_search.id)
 connected_after = find_jobs_where_search(filter_name)
 print(f"Connected {len(new_jobs)} new jobs to {filter_name} (total {len(connected_after)})")
