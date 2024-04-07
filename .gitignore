@@ -1,0 +1,6 @@
+venv
+.vscode
+.env
+out/*
+**/__pycache__
+todo.md
