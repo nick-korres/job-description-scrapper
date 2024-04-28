@@ -15,7 +15,7 @@ from utils.job_posting.get_all_job_ids import get_all_job_ids
 from utils.job_posting.scrape_job_ids import concurrent_scrape_by_job_ids, scrape_by_job_ids
 from utils.elements.wait_for import wait_for
 from settings.pages import Pages
-from utils.general.load_env import page_wait_timeout
+from utils.general.load_env import app_settings
 from selenium.webdriver.remote.webdriver import WebDriver
 
 search_jobs_url= Pages.SEARCH_JOBS
@@ -61,7 +61,7 @@ def search(driver:WebDriver,search_string):
     actions = ActionChains(driver)
     actions.send_keys(Keys.ENTER)
     actions.perform()
-    time.sleep(page_wait_timeout)
+    time.sleep(app_settings["page_wait_timeout"])
 
     return driver.current_url
 

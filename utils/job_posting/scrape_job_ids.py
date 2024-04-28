@@ -4,7 +4,7 @@ from db.models.job_posts import save_job_to_db
 from settings.element_selector_dictionary import Elements
 from utils.elements.wait_for import highlight_click, wait_for
 from settings.pages import Pages
-from utils.general.load_env import page_wait_timeout
+from utils.general.load_env import app_settings
 import time
 from selenium.webdriver.remote.webdriver import WebDriver
 
@@ -31,9 +31,7 @@ def scrape_by_job_ids(driver: WebDriver,job_id_list: list[str],base_url=Pages.JO
 
         current_job_page = base_url + job_id
         driver.get(current_job_page)
-        time.sleep(page_wait_timeout)
-        wait_for(driver,Elements.JOB_VIEW_MORE_BUTTON)
-        highlight_click(driver,Elements.JOB_VIEW_MORE_BUTTON)
+        time.sleep(app_settings["page_wait_timeout"])
         save_job_to_db(driver)
         saved_jobs.append(job_id)
         
@@ -101,7 +99,7 @@ async def scrape_job_id_single(driver: WebDriver,job_id: str,thread,cached_jobs:
     # switch to last opened tab
     driver.switch_to.window(driver.window_handles[-1]) 
     driver.get(current_job_page)
-    time.sleep(page_wait_timeout)
+    time.sleep(app_settings["page_wait_timeout"])
     wait_for(driver,Elements.JOB_VIEW_MORE_BUTTON)
     highlight_click(driver,Elements.JOB_VIEW_MORE_BUTTON)
     save_job_to_db(driver)

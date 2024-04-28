@@ -1,6 +1,6 @@
 from utils.elements.find_element import find_element_wrapper, find_elements_wrapper
 from utils.elements.wait_for import wait_for
-from utils.general.load_env import email,password
+from utils.general.load_env import app_settings
 from settings.element_selector_dictionary import Elements
 from settings.pages import Pages
 from utils.general.retry_timeout import retry
@@ -17,10 +17,10 @@ def login(driver):
     # Login
 
     email_form = wait_for(driver,Elements.EMAIL)
-    email_form.send_keys(email)
+    email_form.send_keys(app_settings["email"])
 
     password_form = wait_for(driver,Elements.PASSWORD)
-    password_form.send_keys(password) 
+    password_form.send_keys(app_settings["password"]) 
 
     log_in_button = wait_for(driver,Elements.LOGIN_BUTTON)
     log_in_button.click()

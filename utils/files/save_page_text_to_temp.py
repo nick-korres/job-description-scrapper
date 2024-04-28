@@ -2,7 +2,7 @@
 
 import time
 from settings.element_selector_dictionary import Elements
-from utils.general.load_env import page_wait_timeout
+from utils.general.load_env import app_settings
 import uuid
 from utils.elements.wait_for import wait_for
 
@@ -45,7 +45,7 @@ def save_page_html_to_temp(driver,page_url):
     '''
 
     driver.get(page_url)
-    time.sleep(page_wait_timeout)
+    time.sleep(app_settings["page_wait_timeout"])
     details = wait_for(driver,Elements.ALL)
 
     # Generate a UUID to use as the temp file name

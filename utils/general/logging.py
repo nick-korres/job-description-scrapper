@@ -1,5 +1,5 @@
 import os
-from utils.general.load_env import debug
+from utils.general.load_env import app_settings
 
 class PinnedLog:
     def __init__(self):
@@ -8,7 +8,7 @@ class PinnedLog:
 
     def clear_log(self,clean_pinned = False):
     # In debug mode we dont want to clear the log
-        if debug: return
+        if app_settings["debug"]: return
         if os.name == 'nt':
             os.system('cls')  # Windows
         else:

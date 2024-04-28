@@ -4,7 +4,7 @@ from settings.element_selector_dictionary import Elements
 from settings.pages import Pages
 from utils.elements.wait_for import highlight_click, wait_for
 from utils.general.get_driver import get_driver
-from utils.general.load_env import settings
+from utils.general.load_env import app_settings
 import keyboard
 
 
@@ -44,7 +44,7 @@ class Filter:
             # Load the URL in the browser
             driverInstance.get(url)  
             driverInstance.switch_to.window(driverInstance.current_window_handle)
-            time.sleep(settings["page_wait_timeout"])
+            time.sleep(app_settings["page_wait_timeout"])
             wait_for(driverInstance,Elements.JOB_VIEW_MORE_BUTTON)
             highlight_click(driverInstance,Elements.JOB_VIEW_MORE_BUTTON)
             keyboard.press("esc")

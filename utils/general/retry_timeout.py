@@ -1,5 +1,5 @@
 import time
-from utils.general.load_env import retry_count,retry_delay
+from utils.general.load_env import app_settings
 
 class RetryState:
     def __init__(self):
@@ -7,7 +7,7 @@ class RetryState:
 
 retry_state = RetryState()
 
-def retry(max_attempts=retry_count, delay=retry_delay, func_at_fail=None):
+def retry(max_attempts=app_settings["retry_count"], delay=app_settings["retry_delay"], func_at_fail=None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             for i in range(max_attempts):
