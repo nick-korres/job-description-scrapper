@@ -7,3 +7,8 @@ class Pages:
     SEARCH_JOBS = "https://www.linkedin.com/jobs/search/"
     JOB_VIEW = "https://www.linkedin.com/jobs/view/"
     
+class SearchLocations:
+    GREECE = "Greece"
+    EUROPEAN_UNION = "European Union"
+    WORLDWIDE = "Worldwide"
+    ATHENS = "Athens"

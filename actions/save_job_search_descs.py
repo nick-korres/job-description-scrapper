@@ -18,16 +18,18 @@ from settings.pages import Pages
 from utils.general.load_env import app_settings
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from utils.url_params import append_url_params
+
 search_jobs_url= Pages.SEARCH_JOBS
 search_all_url = Pages.SEARCH_ALL
 
 @cleanup()
-def save_job_search_descs(driver:WebDriver,search_string:str,clear_cache:bool = False):
+def save_job_search_descs(driver:WebDriver,search_string:str,clear_cache:bool = False,Location=None):
     '''
     Search on Linkedin and save descriptions of job postings in /out/:search_string dir
     '''
     
-    job_search_url = search(driver,search_string)
+    job_search_url = search(driver,search_string,Location=Location)
     print("Job Search URL : ",job_search_url)
 
     if (clear_cache):
@@ -48,13 +50,16 @@ def save_job_search_descs(driver:WebDriver,search_string:str,clear_cache:bool = 
     search_string: search_strings = find_or_create_search(search_string)
     connect_jobs_to_search(saved_jobs,search_string.id)
 
-def search(driver:WebDriver,search_string):
+def search(driver:WebDriver,search_string,Location=None):
     '''
     This function will save the job description of the recommended jobs
     '''
+    search_url = search_jobs_url
+    if Location is not None:
+        search_url = append_url_params(search_url,{"location":Location})
 
-    logger.print_pin(f"Searching for : {search_string}")
-    driver.get(search_jobs_url)
+    logger.print_pin(f"Searching for : {search_string} at {Location}")
+    driver.get(search_url)
     search_bar =  wait_for(driver,Elements.JOB_SEARCH_BOX)
     search_bar.clear()
     search_bar.send_keys(search_string)
