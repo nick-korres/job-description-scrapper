@@ -19,3 +19,8 @@ def get_element_selector(element_name: Elements):
     by = elements[element_name]["selectBy"]
     value = elements[element_name]["selector"]
     return by,value
+
+def find_element_wrapper_no_retry(driver : WebDriver,element_name: Elements):
+    by,value = get_element_selector(element_name)
+    element = driver.find_element(by,value)
+    return element
