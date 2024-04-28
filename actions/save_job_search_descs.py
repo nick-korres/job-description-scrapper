@@ -17,7 +17,6 @@ from utils.elements.wait_for import wait_for
 from settings.pages import Pages
 from utils.general.load_env import app_settings
 from selenium.webdriver.remote.webdriver import WebDriver
-
 from utils.url_params import append_url_params
 
 search_jobs_url= Pages.SEARCH_JOBS
@@ -48,7 +47,8 @@ def save_job_search_descs(driver:WebDriver,search_string:str,clear_cache:bool = 
 
     saved_jobs: list[str] = scrape_by_job_ids(driver=driver,job_id_list=all_job_ids,cached_jobs=cached_jobs)
     search_string: search_strings = find_or_create_search(search_string)
-    connect_jobs_to_search(saved_jobs,search_string.id)
+    added_jobs = connect_jobs_to_search(saved_jobs,search_string.id)
+    return added_jobs
 
 def search(driver:WebDriver,search_string,Location=None):
     '''
