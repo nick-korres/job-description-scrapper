@@ -7,7 +7,7 @@ default_criteria={
      "use_regex" : False
 }
 
-def match_string_list_union(jobs_to_filter:list[job_post], search_strings:list[str],extra_criteria=default_criteria):
+def match_string_list_union(jobs_to_filter:list[job_post], search_strings:list[str],extra_criteria=default_criteria,field_to_search="description"):
     # Initialize a dictionary to store the counts of matches for each search string
     matches_count = {search_str: 0 for search_str in search_strings}
     
@@ -18,7 +18,8 @@ def match_string_list_union(jobs_to_filter:list[job_post], search_strings:list[s
 
     for job in jobs_to_filter:            
         for search_key in search_strings:
-            any_string_matched = any(pattern.search(job.description) for pattern in compiled_patterns)
+            field = getattr(job,field_to_search)
+            any_string_matched = any(pattern.search(field) for pattern in compiled_patterns)
             if any_string_matched:
                 # Increment the count for this search string
                 matches_count[search_key] += 1
@@ -29,11 +30,12 @@ def match_string_list_union(jobs_to_filter:list[job_post], search_strings:list[s
     return matching_jobs, matches_count
 
 
-def match_string_list_intersection(jobs_to_filter:list[job_post], search_strings:list[str],extra_criteria=default_criteria):
+def match_string_list_intersection(jobs_to_filter:list[job_post], search_strings:list[str],extra_criteria=default_criteria,field_to_search="description"):
     matching_jobs :list[job_post] = list()
     compiled_patterns = compile_patterns(search_strings,extra_criteria)
-    for job in jobs_to_filter:         
-        all_strings_matched = all(pattern.search(job.description) for pattern in compiled_patterns)
+    for job in jobs_to_filter:
+        field = getattr(job,field_to_search)         
+        all_strings_matched = all(pattern.search(field) for pattern in compiled_patterns)
         # if all_strings_found:
         if all_strings_matched:
         # Add the job to the matching jobs list
@@ -41,11 +43,12 @@ def match_string_list_intersection(jobs_to_filter:list[job_post], search_strings
                     
     return matching_jobs
 
-def not_match_string_list(jobs_to_filter:list[job_post], excluded_strings:list[str],extra_criteria=default_criteria):
+def not_match_string_list(jobs_to_filter:list[job_post], excluded_strings:list[str],extra_criteria=default_criteria,field_to_search="description"):
     matching_jobs :list[job_post] = list()
     compiled_patterns = compile_patterns(excluded_strings,extra_criteria)
-    for job in jobs_to_filter:                 
-        any_string_found = any(pattern.search(job.description) for pattern in compiled_patterns)
+    for job in jobs_to_filter:
+        field = getattr(job,field_to_search)                 
+        any_string_found = any(pattern.search(field) for pattern in compiled_patterns)
         # If none match
         if not any_string_found:
         # Add the job to the matching jobs list
@@ -71,11 +74,13 @@ def not_match_string_list(jobs_to_filter:list[job_post], excluded_strings:list[s
     
 def compile_patterns(strings,extra_criteria):
     flags=0
-
-    if ( extra_criteria["ignore_case"] ):
+    ignore_case = extra_criteria.get("ignore_case",True)
+    use_regex = extra_criteria.get("use_regex",True)
+    
+    if ( ignore_case ):
         flags = flags|re.IGNORECASE
 
-    if ( not extra_criteria["use_regex"] ):
+    if ( not use_regex ):
         strings = [re.escape(s) for s in strings]
 
     patterns =  [re.compile(pattern,flags) for pattern in strings]
