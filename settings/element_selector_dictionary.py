@@ -26,7 +26,7 @@ elements={
     Elements.LOGIN_BUTTON:{ "selectBy":By.CSS_SELECTOR,"selector":'[data-id="sign-in-form__submit-btn"]'},
     Elements.EMAIL:{ "selectBy":By.ID,"selector":"session_key"},
     Elements.PASSWORD:{ "selectBy":By.ID,"selector":"session_password"},
-    Elements.PROFILE_BUTTON:{ "selectBy":By.XPATH,"selector":"//*[contains(@class, 'identity')]"},
+    Elements.PROFILE_BUTTON:{ "selectBy":By.XPATH,"selector":"//*[contains(@class, 'feed-identity-module__member-photo')]"},
     # Elements.JOB_DETAILS:{ "selectBy":By.XPATH,"selector": '//*[contains(@class, "jobs-description-content")]'},
     Elements.ALL:{"selectBy":By.XPATH,"selector":"//*"},
     Elements.SEARCH_FIELD:{"selectBy":By.XPATH,"selector":"//*[contains(@class, 'jobs-search-box__text-input')]"},
