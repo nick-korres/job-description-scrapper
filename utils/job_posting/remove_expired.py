@@ -5,6 +5,7 @@ from settings.element_selector_dictionary import Elements
 from settings.pages import Pages
 from utils.elements.find_element import find_element_wrapper_no_retry
 from utils.elements.wait_for import highlight_click, wait_for
+from utils.general.datetime import days_diff_from_now
 from utils.general.get_driver import get_driver
 from utils.general.load_env import app_settings
 
@@ -41,16 +42,27 @@ def remove_expired_jobs(driverInstance,job_list : list[job_post]):
             print(f"Error while checking {job.linkedin_id} : {job.title}")
     return None
 
-def removed_expired_from_search(search: str | None,driverInstance=None):
+def removed_expired_from_search(search: str | None,driverInstance=None,older_than_days: int = 7):
     if driverInstance is None:
         driverInstance = get_driver({"headless":True})
     job_list: list[job_post] = find_jobs_where_search(search)
+    if older_than_days > 0:
+        job_list = [job for job in job_list if days_diff_from_now(job.create_date) > older_than_days]
     remove_expired_jobs(driverInstance,job_list)
 
-def trim_all_jobs(driverInstance = None):
+def remove_jobs_older_than(driverInstance,older_than_days: int = 7):
     if driverInstance is None:
         driverInstance = get_driver({"headless":True})
-    removed_expired_from_search(None,driverInstance)
+    job_list: list[job_post] = find_jobs_where_search(None)
+    job_list = [job for job in job_list if days_diff_from_now(job.create_date) > older_than_days]
+    for job in job_list:
+        print(f"Deleting {job.linkedin_id} : {job.title}")
+        delete_where(job_post,"linkedin_id",job.linkedin_id)
+
+def trim_all_jobs(driverInstance = None,older_than_days: int = 7):
+    if driverInstance is None:
+        driverInstance = get_driver({"headless":True})
+    removed_expired_from_search(None,driverInstance,older_than_days=older_than_days)
     driverInstance.quit()
     delete_orphan_jobs()
 
