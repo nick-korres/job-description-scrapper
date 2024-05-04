@@ -7,6 +7,13 @@ class GenericClass:
     def __init__(self, value):
         self.value = value
 
+class WhereClause:
+    def __init__(self,attribute,value,operator="="):
+        self.attribute = attribute
+        self.value = value
+        self.operator = operator
+    def get_str(self):
+        return f'{self.attribute} {self.operator} "{self.value}"'
 
 def insert_one(db_class: Type[GenericClass],options = {"insert_or_ignore": True}):
     columns = get_class_attributes(db_class)
@@ -26,6 +33,14 @@ def find_where(db_class: GenericClass,attribute,value,operator="="):
     result = run_query(query_string)
     return serialize_db_response(result,db_class)
 
+def find_multiple_where(db_class: GenericClass,clauses :list[WhereClause]):
+    table_name = db_class.__name__
+    columns = get_class_attributes_without_instance(db_class)
+    where_clauses = [clause.get_str() for clause in clauses]
+    where_clause = " AND ".join(where_clauses)
+    query_string = f'SELECT {",".join(columns)} FROM {table_name} where ({where_clause})'
+    result = run_query(query_string)
+    return serialize_db_response(result,db_class)
     
 def get_class_attributes_without_instance(db_class: GenericClass):
     return list(db_class.__annotations__.keys())
