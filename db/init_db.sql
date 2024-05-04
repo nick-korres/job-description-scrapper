@@ -31,3 +31,18 @@ CREATE TABLE IF NOT EXISTS 'search_to_job' (
         PRIMARY KEY ( linkedin_id , search_id )
 );
 
+
+CREATE TABLE IF NOT EXISTS  'user' (
+	id TEXT PRIMARY KEY,
+	linkedin_url TEXT UNIQUE	
+) ;
+
+
+CREATE TABLE IF NOT EXISTS 'user_saw_job_post' (
+	user_id TEXT ,
+	job_post_id TEXT ,
+        user_chose_it boolean,
+	PRIMARY KEY (user_id,job_post_id),
+	FOREIGN KEY(user_id) REFERENCES 'user'(id) ON DELETE CASCADE,
+	FOREIGN KEY(job_post_id) REFERENCES 'job_post'(linkedin_id) ON DELETE CASCADE
+);

@@ -1,6 +1,4 @@
-import uuid
 from db.models.search_strings import find_existing_search, search_strings
-
 from db.queries import delete_where, insert_one
 
 
