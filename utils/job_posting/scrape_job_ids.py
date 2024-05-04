@@ -32,6 +32,12 @@ def scrape_by_job_ids(driver: WebDriver,job_id_list: list[str],base_url=Pages.JO
         current_job_page = base_url + job_id
         driver.get(current_job_page)
         time.sleep(app_settings["page_wait_timeout"])
+        try:
+            wait_for(driver,Elements.JOB_VIEW_MORE_BUTTON)
+            highlight_click(driver,Elements.JOB_VIEW_MORE_BUTTON)
+        except Exception as e:
+            print(f"Did not find more button for {job_id}")
+            print(e)
         save_job_to_db(driver)
         saved_jobs.append(job_id)
         
