@@ -42,6 +42,9 @@ def get_driver(settings_override: dict[str, Any] | None = None)-> WebDriver:
         profile.set_preference("general.useragent.override",random_id.__str__())
         service = Service(GeckoDriverManager().install())
         driver = webdriver.Firefox(service=service,firefox_profile=profile,options=options)
-
+    
+    driver.set_window_position(app_settings["window_x"], app_settings["window_y"])
+    driver.maximize_window()
+    driver.get("https://www.linkedin.com")
 
     return driver
