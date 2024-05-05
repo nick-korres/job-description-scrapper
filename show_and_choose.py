@@ -6,6 +6,8 @@ from db.models.search_to_job import connect_jobs_to_search, delete_search_cache
 from settings.directories import Dirs
 from utils.files.json_cache import save_json
 from utils.general.load_env import app_settings
+from nltk import FreqDist
+
 
 def show_and_choose(filter_name:str,job_list: list[job_post] ,delete_cache:bool=False,start_from:int=0,save_selection_info:bool=False):
     job_list=job_list[start_from:]
@@ -15,7 +17,7 @@ def show_and_choose(filter_name:str,job_list: list[job_post] ,delete_cache:bool=
 
     if save_selection_info:
         distribution_union = get_word_distribution_union(selected_jobs_list,excluded_words=[])
-        save_json(f'{Dirs.OUT_SHOW_AND_CHOOSE}{app_settings["user_url"]}.json',distribution_union,merge=True)        
+        save_distribution(distribution_union)        
 
     # Save the ones you chose under new search string (filter_name)
     search_string: search_strings = find_or_create_search(filter_name)
@@ -37,7 +39,13 @@ def show_and_choose(filter_name:str,job_list: list[job_post] ,delete_cache:bool=
     new_search = find_or_create_search(filter_name)
     connect_jobs_to_search(all_jobs,new_search.id)
     connected_after = find_jobs_where_search(filter_name)
-    print(f"Connected {added_len} new jobs to {filter_name} (total {len(connected_after)})")    
+    print(f"Connected {added_len} new jobs to {filter_name} (total {len(connected_after)})")
+
+
+def save_distribution(dist: FreqDist, user_url:str = app_settings["user_url"],clear_cache:bool=False):
+    preferences_file = f'{Dirs.OUT_SHOW_AND_CHOOSE}{user_url}.json'
+    merge = not clear_cache
+    save_json(preferences_file,dist,merge=merge)
 
 
 if __name__ == "__main__":
