@@ -174,3 +174,18 @@ def extract(string: str,match_list:list[str]):
     match = " - ".join([match for match in string.split() if match.lower() in match_list])
     if (match == "" ) : match ="Not found"
     return match
+
+def get_jobs_user_saw(user_id:str,only_chose:bool = False):
+    columns= get_class_attributes_without_instance(job_post)
+    prefixed_columns = [f"job_post.{column}" for column in columns]
+    query= f'''
+    SELECT {",".join(prefixed_columns)} FROM job_post 
+    LEFT JOIN user_saw_job_post ON job_post.linkedin_id = user_saw_job_post.job_post_id'''
+
+    if only_chose:
+        query = query + " WHERE user_saw_job_post.user_chose_it = 1"
+
+    query = query.replace("\n","")
+    res = run_query(query)
+    ser_res:list[job_post] = serialize_db_response(res,job_post)
+    return ser_res
