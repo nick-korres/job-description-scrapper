@@ -3,7 +3,6 @@ from selenium.webdriver.support import expected_conditions as EC
 from settings.element_selector_dictionary import Elements
 from utils.elements.find_element import get_element_selector
 from utils.general.retry_timeout import retry_state, retry
-# from utils.general.init import driverInstance
 from utils.general.load_env import app_settings
 from selenium.webdriver.remote.webdriver import WebDriver
 

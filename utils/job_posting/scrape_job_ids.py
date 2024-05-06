@@ -20,7 +20,6 @@ def scrape_by_job_ids(driver: WebDriver,job_id_list: list[str],base_url=Pages.JO
     for index,job_id in enumerate(job_id_list):
         if job_id in cached_jobs:
             print(f'using cached version for {job_id}')
-            saved_jobs.append(job_id)
             continue
         logger.clear_log()
         print(f"Scraping : {index+1}/{total_jobs}")
@@ -42,6 +41,8 @@ def scrape_by_job_ids(driver: WebDriver,job_id_list: list[str],base_url=Pages.JO
         saved_jobs.append(job_id)
         
     # The start_time after last iterations is current time
+    if(start_time is None):
+        start_time = time.time()
     print(f'Total time {start_time - total_time_start}')
     return saved_jobs
 

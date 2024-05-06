@@ -24,14 +24,17 @@ def add_user(user_url : str):
 def get_user_by_url(user_url : str):
     res =  find_where(user,"linkedin_url",user_url)
     if len(res) == 0:
-        raise Exception(f"User with url {user_url} not found")
+        return None
     if len(res) > 1:
         raise Exception(f"Multiple users found with url {user_url}")
     return res[0]
 
-def get_current_user(driver: WebDriver):
+def get_or_add_current_user(driver: WebDriver):
     current_user_url = find_current_user_url(driver)
-    return get_user_by_url(current_user_url)
+    user =  get_user_by_url(current_user_url)
+    if user is None:
+        user = add_user(current_user_url)
+    return user
 
 def find_current_user_url(driver: WebDriver):
     previous_url = driver.current_url

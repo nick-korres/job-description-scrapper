@@ -3,7 +3,7 @@ from actions.login import login
 from data_process.pattern import get_word_distribution_union
 from data_process.similarity import calculate_similarity
 from db.models.job_posts import job_post
-from db.models.user import get_current_user, user
+from db.models.user import get_or_add_current_user, user
 from db.models.user_saw_job_post import connect_user_to_job_post, get_user_saw_job_posts
 from db.queries import delete_where
 from settings.element_selector_dictionary import Elements
@@ -46,12 +46,15 @@ class Filter:
         # List to store URLs selected by the user
     
         # Initialize Selenium webdriver , specifically not headless
+        
         driverInstance = get_driver( { "headless": False } )
-        current_user: user = get_current_user(driverInstance)
+        login(driverInstance)
+        current_user: user = get_or_add_current_user(driverInstance)
 
         if hide_viewed_jobs:
             jobs_seen = get_user_saw_job_posts(current_user.id)
-            job_list = [job for job in job_list if job.linkedin_id not in jobs_seen]
+            job_seen_ids = [job.job_post_id for job in jobs_seen]
+            job_list = [job for job in job_list if job.linkedin_id not in job_seen_ids]
 
         keyboard.add_hotkey('alt+c', self.close,suppress=True)
         keyboard.add_hotkey('alt+right', self.add_job,suppress=True)
@@ -63,7 +66,6 @@ class Filter:
             self.continue_ = False
             url = f'{Pages.JOB_VIEW}/{job.linkedin_id}'
             # Load the URL in the browser
-            login(driverInstance)
             driverInstance.get(url)  
             driverInstance.switch_to.window(driverInstance.current_window_handle)
             
