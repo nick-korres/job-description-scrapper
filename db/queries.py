@@ -65,3 +65,10 @@ def delete_where(db_class: GenericClass,attribute,value,operator="="):
     table_name = db_class.__name__
     query_string = f'DELETE FROM {table_name} where {table_name}.{attribute} {operator} ? ;'
     run_query(query_string,[value])
+
+
+def count_all(db_class: GenericClass):
+    table_name = db_class.__name__
+    query_string = f'SELECT COUNT(*) FROM {table_name};'
+    result = run_query(query_string)
+    return result[0][0]
