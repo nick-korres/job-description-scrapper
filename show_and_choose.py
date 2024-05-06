@@ -20,9 +20,21 @@ def show_and_choose(filter_name:str,job_list: list[job_post] ,delete_cache:bool=
         save_distribution(distribution_union)        
 
     # Save the ones you chose under new search string (filter_name)
+    upsert_search(selected_jobs_list,filter_name,delete_cache=delete_cache)
+
+
+
+
+
+def save_distribution(dist: FreqDist, user_url:str = app_settings["user_url"],clear_cache:bool=False):
+    preferences_file = f'{Dirs.OUT_SHOW_AND_CHOOSE}{user_url}.json'
+    merge = not clear_cache
+    save_json(preferences_file,dist,merge=merge)
+
+def upsert_search(job_list: list[job_post],filter_name:str,delete_cache:bool=False):
     search_string: search_strings = find_or_create_search(filter_name)
     all_jobs= []
-    selected_jobs_ids = [job.linkedin_id for job in selected_jobs_list]
+    selected_jobs_ids = [job.linkedin_id for job in job_list]
     added_len = 0
     if delete_cache:
         delete_search_cache(filter_name)
@@ -39,13 +51,7 @@ def show_and_choose(filter_name:str,job_list: list[job_post] ,delete_cache:bool=
     new_search = find_or_create_search(filter_name)
     connect_jobs_to_search(all_jobs,new_search.id)
     connected_after = find_jobs_where_search(filter_name)
-    print(f"Connected {added_len} new jobs to {filter_name} (total {len(connected_after)})")
-
-
-def save_distribution(dist: FreqDist, user_url:str = app_settings["user_url"],clear_cache:bool=False):
-    preferences_file = f'{Dirs.OUT_SHOW_AND_CHOOSE}{user_url}.json'
-    merge = not clear_cache
-    save_json(preferences_file,dist,merge=merge)
+    print(f"Connected {added_len} new jobs to {filter_name} (total {len(connected_after)})")    
 
 
 if __name__ == "__main__":
