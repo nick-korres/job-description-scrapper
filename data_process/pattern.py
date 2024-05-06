@@ -5,6 +5,7 @@ from typing import TypedDict
 import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
+from data_process.similarity import AllFieldsDist, ComparableFields
 from db.models.job_posts import find_jobs_where_search, job_post
 from bs4 import BeautifulSoup
 from nltk import FreqDist
@@ -66,13 +67,14 @@ def get_word_distributions(jobs_to_analyze: list[job_post],excluded_words=exclud
     stop_words = set(stopwords.words('english'))
     all_excluded_words = excluded_words + list(stop_words)
     lemmatizer = WordNetLemmatizer()
+    # stemmer = PorterStemmer()
     distribution_dict :dict[str,FreqDist]= {}
     for job in jobs_to_analyze:
         soup = BeautifulSoup(job.description, "html.parser")
         page_text = soup.get_text(separator=' ').lower()
         tokens = word_tokenize(page_text)
         filtered_tokens = [word for word in tokens if word.isalpha() and word.casefold() not in all_excluded_words]
-        # stemmer = PorterStemmer()
+        
         # filtered_tokens = [stemmer.stem(word) for word in filtered_tokens]
         filtered_tokens = [word for word in filtered_tokens if word not in string.punctuation]
 
@@ -99,7 +101,7 @@ def get_word_distribution_union(jobs_to_analyze: list[job_post],excluded_words=e
     tokens = word_tokenize(page_text)
     filtered_tokens = [word for word in tokens if word.isalpha() and word.casefold() not in all_excluded_words]
     
-    filtered_tokens = [stemmer.stem(word) for word in filtered_tokens]
+    # filtered_tokens = [stemmer.stem(word) for word in filtered_tokens]
 
     filtered_tokens = [word for word in filtered_tokens if word not in string.punctuation]
 
@@ -114,10 +116,40 @@ def get_word_distribution_union(jobs_to_analyze: list[job_post],excluded_words=e
         
     return dist
         
+def get_word_distribution_all_fields_union(jobs_to_analyze: list[job_post],excluded_words=excluded_words,freq_threshold=None):
+    stop_words = set(stopwords.words('english'))
+    all_excluded_words = excluded_words + list(stop_words)
+    lemmatizer = WordNetLemmatizer()
 
+    comparable_fields = [field for field in ComparableFields.__args__]
 
+    combined_text_dict = { field: "" for field in comparable_fields}
+
+    for job in jobs_to_analyze:
+        for field in comparable_fields:
+            combined_text_dict[field] += getattr(job,field)
     
+    dist_dict : AllFieldsDist = {}
+    for field in comparable_fields:
+        soup = BeautifulSoup(combined_text_dict[field], "html.parser")
+        page_text = soup.get_text(separator=' ').lower()
+        tokens = word_tokenize(page_text)
+        filtered_tokens = [word for word in tokens if word.isalpha() and word.casefold() not in all_excluded_words]
+    
+        filtered_tokens = [word for word in filtered_tokens if word not in string.punctuation]
 
+        filtered_tokens = [lemmatizer.lemmatize(word) for word in filtered_tokens]
+
+        filtered_tokens = [word for word in filtered_tokens if len(word) > 2]
+
+        dist = FreqDist(filtered_tokens)
+        if freq_threshold:
+            dist = {k:v for k,v in dist.items() if v > freq_threshold}
+        dist_dict[field] = dist
+
+    return dist_dict
+    
+    
 
 def parse_job_description(job:job_post,all_excluded_words=[]):
         soup = BeautifulSoup(job.description, "html.parser")

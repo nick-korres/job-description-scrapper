@@ -1,8 +1,13 @@
+from typing import Literal, TypedDict
 from nltk.util import pairwise
 from scipy.spatial.distance import cosine
 import numpy as np
 from scipy.sparse import csr_matrix
 from joblib import Parallel, delayed 
+from nltk import FreqDist
+
+
+
 
 
 def list_to_matrix(similarity_list, key_map : list[str]):
@@ -118,6 +123,37 @@ def calculate_similarity(dist1, dist2,lower_threshold = 0.0):
         # For optimization reasons
         similarity = 0
 
+    return similarity
+
+ComparableFields = Literal["title", "description", "name", "sector", "location","remote"]
+class AllFieldsDist(TypedDict):
+    title: FreqDist
+    description: FreqDist
+    name: FreqDist
+    sector: FreqDist
+    location: FreqDist
+    remote: FreqDist
+class AllFieldsWeights(TypedDict):
+    title: int
+    description: int
+    name: int
+    sector: int
+    location: int
+    remote: int
+
+def calculate_similarity_all_fields(dist1: AllFieldsDist , dist2 : AllFieldsDist, weights : AllFieldsWeights ,lower_threshold = 0.0):
+    total_weight = sum(weights.values())
+    threshold = 1e-10 
+    # because of floating point precision , sometimes the sum is not exactly 1
+    if abs(total_weight - 1) > threshold:
+        raise ValueError(f"Weights should sum to 1 but they sum to {total_weight}")
+    similarity = 0
+    for field in weights:
+        if field not in dist1:
+            dist1[field] = FreqDist()        
+        if field not in dist2:
+            dist2[field] = FreqDist()
+        similarity += weights[field]*calculate_similarity(dist1[field],dist2[field],lower_threshold)
     return similarity
 
 
