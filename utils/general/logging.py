@@ -19,7 +19,7 @@ class PinnedLog:
         else:
             print(self.delimiter.join(self.pinned_log))
 
-    def print_pin(self,msg:str,append = False):
+    def print_pin(self,msg:str,append = True):
         if append:
             self.pinned_log.append(msg)
         else:
