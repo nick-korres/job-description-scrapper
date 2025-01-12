@@ -42,7 +42,7 @@ def save_job_search_descs(driver:WebDriver,search_string:str,clear_cache:bool = 
         
     all_job_ids = get_all_job_ids(driver,job_search_url)
 
-    # TODO invalidation should be checking all ids if the still exist not by search
+    # TODO invalidation should be checking all ids if they still exist not by this search
     # invalidate_cache(all_job_ids,search_string)
 
     saved_jobs: list[str] = scrape_by_job_ids(driver=driver,job_id_list=all_job_ids,cached_jobs=cached_jobs)
