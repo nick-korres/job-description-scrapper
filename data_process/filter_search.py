@@ -1,5 +1,4 @@
-from datetime import date
-import datetime
+from datetime import datetime,date
 import os
 from data_process.match_string import match_string_list_intersection, match_string_list_union, not_match_string_list
 from db.models.job_posts import find_jobs_where_search, job_post
@@ -32,10 +31,10 @@ def filter_search(search :str | None ,criteria: Criteria,name=None):
     print(f"filtering on {len(jobs_to_filter)} job posts")
     
     if criteria.full is not None:
-        jobs_to_filter = filter_by_field(search,criteria.full,"description",jobs_to_filter)
+        jobs_to_filter = filter_by_field(criteria.full,"description",jobs_to_filter)
 
     for field in criteria.fields:
-        jobs_to_filter = filter_by_field(search,field['criteria'],field['field_name'],jobs_to_filter)
+        jobs_to_filter = filter_by_field(field['criteria'],field['field_name'],jobs_to_filter)
     
     job_ids = [job.linkedin_id for job in jobs_to_filter ]
 
@@ -49,20 +48,20 @@ def filter_search(search :str | None ,criteria: Criteria,name=None):
     # The ids of the ones left
     return jobs_to_filter
 
-def filter_by_field(search:str | None,criteria:CriteriaConfig,field:str,jobs_to_filter: list[job_post]):
+def filter_by_field(criteria:CriteriaConfig,field:str,jobs_to_filter: list[job_post]):
     union_keywords = criteria.get("or",None)
     intersection_keywords = criteria.get("and",None)
     exclusion_keywords = criteria.get("not",None)
 
     if ( union_keywords is not None ):
         jobs_to_filter, _ = match_string_list_union(jobs_to_filter,union_keywords,extra_criteria=criteria,field_to_search=field)
-        print(len(jobs_to_filter))
+        
     if ( intersection_keywords is not None ):
         jobs_to_filter = match_string_list_intersection(jobs_to_filter,intersection_keywords,extra_criteria=criteria,field_to_search=field)
-        print(len(jobs_to_filter))
+        
     if ( exclusion_keywords is not None ):
         jobs_to_filter = not_match_string_list(jobs_to_filter,exclusion_keywords,extra_criteria=criteria,field_to_search=field)
-        print(len(jobs_to_filter))    
+    print(f"After applying {field} filter : {len(jobs_to_filter)}")    
     return jobs_to_filter
 
 def filter_many_union(search,keywords,name=None):

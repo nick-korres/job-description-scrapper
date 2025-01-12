@@ -4,7 +4,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 from db.db_connect import run_query
 from db.models.search_strings import find_existing_search, search_strings
 from db.models.search_to_job import search_to_job
-from db.queries import find_where, get_class_attributes_without_instance, insert_one, serialize_db_response
+from db.queries import find_where, get_class_attributes_without_instance, insert_one, serialize_db_response, upsert_one
 from settings.element_selector_dictionary import Elements
 from selenium.webdriver.remote.webelement import WebElement
 from utils.elements.find_element import find_element_wrapper, find_elements_wrapper
@@ -28,7 +28,11 @@ class job_post:
     remote : str
     full  : str
     level : str
-    def __init__(self, linkedin_id : str,inner_html : str,description: str,create_date : datetime,title : str,size:str,sector:str,name:str,location:str,age_number:str,age_type:str,applicants,    remote : str, full  : str,level : str):
+    expired_date : datetime
+    skills_required : str
+
+    skills_delimiter = " -#- "
+    def __init__(self, linkedin_id : str,inner_html : str,description: str,create_date : datetime,title : str,size:str,sector:str,name:str,location:str,age_number:str,age_type:str,applicants, remote : str, full  : str,level : str,expired_date : datetime = None,skills_required:str = ""):
 
         self.linkedin_id = linkedin_id
         self.inner_html = inner_html
@@ -46,6 +50,8 @@ class job_post:
         self.remote = remote
         self.full = full 
         self.level = level
+        self.expired_date = expired_date
+        self.skills_required = skills_required
 
 
     
@@ -55,7 +61,7 @@ def save_job_to_db(driver: WebDriver):
     inner = details.get_attribute("innerHTML")
     description = get_desc_from_inner_html(inner)
 
-    title,size,sector,name,location,age_number,age_type,applicants,remote,full,level = extract_extra_info(driver)
+    title,size,sector,name,location,age_number,age_type,applicants,remote,full,level,skills_required = extract_extra_info(driver)
 
     new_job_post = job_post(linkedin_id=current_job_id,
                             description=description,
@@ -69,9 +75,10 @@ def save_job_to_db(driver: WebDriver):
                             age_number = age_number,
                             age_type = age_type,
                             applicants = applicants,
-                            remote=remote,full=full,level=level
+                            remote=remote,full=full,level=level,
+                            skills_required=skills_required
                             )
-    insert_one(new_job_post)   
+    upsert_one(new_job_post)   
     return job_post
 
 def find_jobid_where_search(search:str):
@@ -83,18 +90,24 @@ def find_jobid_where_search(search:str):
     job_id_list = [stj.linkedin_id for stj in search_to_job_list]
     return job_id_list
 
-def find_jobs_where_search(search:str | None):
+def find_jobs_where_search(search:str | None,show_expired:bool = False):
     columns= get_class_attributes_without_instance(job_post)
     prefixed_columns = [f"job_post.{column}" for column in columns]
 
-    if search is None :
-        query = f'SELECT {",".join(prefixed_columns)} FROM job_post '
-    else: 
-        query = f''' SELECT {",".join(prefixed_columns)} FROM job_post 
+    query = f''' SELECT DISTINCT {",".join(prefixed_columns)} FROM job_post 
     LEFT JOIN search_to_job ON job_post.linkedin_id = search_to_job.linkedin_id 
-    LEFT JOIN search_strings ON search_strings.id = search_to_job.search_id 
-    WHERE search_strings.search ="{search}"; '''
+    LEFT JOIN search_strings ON search_strings.id = search_to_job.search_id '''
 
+    conditions = []
+    if search is not None:
+        conditions.append(f'search_strings.search ="{search}"')
+    if not show_expired:
+        conditions.append("job_post.expired_date IS NULL")
+        
+    if len(conditions) > 0:
+        query = query + " WHERE ( " + " AND ".join(conditions)+ " )"
+
+    query = query + " ;"
     query = query.replace('\n', ' ')
 
     res = run_query(query)
@@ -154,9 +167,18 @@ def extract_extra_info(driver: WebDriver):
 
         location = location.replace("Reposted","")
         location = location.lstrip().rstrip()
+
+        matching_skill_elements = find_elements_wrapper(driver,Elements.JOB_PAGE_SKILLS_MATCH)
+        matching_skills_text = [re.sub(r"\d+ skill(s)?.*profile\n", "", skill.text) for skill in matching_skill_elements]
+        matching_skills_text = [skill.replace("and","") for skill in matching_skills_text if skill != ""]
+        # 0 index should the ones that match with the profile
+        # 1 index should be the ones that don't match
+        matching_skills = [value for s in matching_skills_text for value in s.split(',')]
+        matching_skills = [skill.lstrip().rstrip() for skill in matching_skills]
+        skills_required = job_post.skills_delimiter.join(matching_skills)
     except Exception as e:
         print(f"error extracting extra info {e}") 
-    return title,size,sector,name,location,age_number,age_type,applicants,remote,full,level
+    return title,size,sector,name,location,age_number,age_type,applicants,remote,full,level,skills_required
 
 
 
@@ -182,10 +204,18 @@ def get_jobs_user_saw(user_id:str,only_chose:bool = False):
     SELECT {",".join(prefixed_columns)} FROM job_post 
     LEFT JOIN user_saw_job_post ON job_post.linkedin_id = user_saw_job_post.job_post_id'''
 
+    where_clause_list = [f' user_saw_job_post.user_id = "{user_id}"']
     if only_chose:
-        query = query + " WHERE user_saw_job_post.user_chose_it = 1"
+        where_clause_list.append("user_saw_job_post.user_chose_it = 1")
+
+    if len(where_clause_list) > 0:
+        query = query + " WHERE " + " AND ".join(where_clause_list)
 
     query = query.replace("\n","")
     res = run_query(query)
     ser_res:list[job_post] = serialize_db_response(res,job_post)
     return ser_res
+
+def set_to_expired(job_ids:list[str]):
+    query = f'''UPDATE job_post SET expired_date = datetime('now') WHERE job_post.linkedin_id IN ({",".join(job_ids)})'''
+    run_query(query)

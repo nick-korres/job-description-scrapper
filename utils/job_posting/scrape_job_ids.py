@@ -37,8 +37,13 @@ def scrape_by_job_ids(driver: WebDriver,job_id_list: list[str],base_url=Pages.JO
         except Exception as e:
             print(f"Did not find more button for {job_id}")
             print(e)
-        save_job_to_db(driver)
-        saved_jobs.append(job_id)
+        
+        try:
+            save_job_to_db(driver)
+            saved_jobs.append(job_id)
+        except Exception as e:
+            print(f"Failed to save job {job_id}")
+            print(e)
         
     # The start_time after last iterations is current time
     if(start_time is None):

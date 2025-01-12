@@ -18,7 +18,10 @@ def retry(max_attempts=app_settings["retry_count"], delay=app_settings["retry_de
                 except Exception as e:
                     print(f"Attempt {i+1} failed with error: {e}")
                     if func_at_fail:
-                        func_at_fail(*args, **kwargs)
+                        try:
+                            func_at_fail(*args, **kwargs)
+                        except TypeError:
+                            func_at_fail()
                     time.sleep(delay)
             raise Exception(f"Function {func.__name__} failed after {max_attempts} attempts")
         return wrapper

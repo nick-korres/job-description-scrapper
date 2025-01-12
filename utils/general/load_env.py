@@ -37,10 +37,9 @@ def string_to_bool(input:str|int,default=False):
 
 # TODO dont run on import 
 
-def load_settings():
-        
+def load_settings(): 
     global app_settings
-    if app_settings is  None:
+    if app_settings is None:
         # Override is needed to ignore current system environment variables
         load_dotenv(dotenv_path=".env",override=True)
 
@@ -60,7 +59,7 @@ def load_settings():
         load_strategy = os.getenv("LOAD_STRATEGY") or "normal"
         user_data_dir_chrome = os.getenv("USER_DATA_DIR_CHROME")
 
-        print("Loaded environment variables")
+        # print("Loaded environment variables")
         app_settings = { 
             "email" : email,  
             "password" : password,  

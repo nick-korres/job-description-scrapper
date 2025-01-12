@@ -50,10 +50,9 @@ def removed_expired_from_search(search: str | None,driverInstance=None,older_tha
         job_list = [job for job in job_list if days_diff_from_now(job.create_date) > older_than_days]
     remove_expired_jobs(driverInstance,job_list)
 
-def remove_jobs_older_than(driverInstance,older_than_days: int = 7):
-    if driverInstance is None:
-        driverInstance = get_driver({"headless":True})
+def remove_jobs_older_than(older_than_days: int = 7):
     job_list: list[job_post] = find_jobs_where_search(None)
+    print(f"Removing jobs older than {older_than_days} days ...")
     job_list = [job for job in job_list if days_diff_from_now(job.create_date) > older_than_days]
     for job in job_list:
         print(f"Deleting {job.linkedin_id} : {job.title}")

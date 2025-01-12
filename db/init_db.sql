@@ -14,8 +14,10 @@ CREATE TABLE IF NOT EXISTS 'job_post' (
         'remote' TEXT,
         full TEXT,
         'level' TEXT,
+        skills_required TEXT,
         create_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        update_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        update_date TIMESTAMP DEFAULT NULL,
+        expired_date TIMESTAMP DEFAULT NULL
 );
 
 CREATE TABLE IF NOT EXISTS 'search_strings' (

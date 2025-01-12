@@ -1,7 +1,8 @@
+from enum import Enum
 from selenium.webdriver.common.by import By
 
 
-class Elements:
+class Elements(Enum):
     LOGIN_BUTTON = "login_button"
     EMAIL = "email"
     PASSWORD = "password"
@@ -19,6 +20,7 @@ class Elements:
     JOB_PAGE_DETAILS="job_page_details"
     JOB_PAGE_COMPANY_NAME_LOCATION="job_page_company_name_location"
     JOB_PAGE_APPLY_ERROR="job_page_apply_error"
+    JOB_PAGE_SKILLS_MATCH="job_page_skills_match"
 
 
 
@@ -41,6 +43,7 @@ elements={
     Elements.JOB_PAGE_DETAILS:{"selectBy":By.XPATH,"selector":"//*[contains(@class, 'job-details-jobs-unified-top-card__job-insight')]"},
     Elements.JOB_PAGE_COMPANY_NAME_LOCATION:{"selectBy":By.XPATH,"selector":"//*[contains(@class, 'job-details-jobs-unified-top-card__primary-description')]"},
     Elements.JOB_PAGE_APPLY_ERROR:{"selectBy":By.XPATH,"selector":"//*[contains(@class, 'jobs-details-top-card__apply-error')]"},
+    Elements.JOB_PAGE_SKILLS_MATCH:{"selectBy":By.XPATH,"selector":"//*[contains(@class, 'job-details-how-you-match__skills-item-wrapper')]"},
 }
     
     

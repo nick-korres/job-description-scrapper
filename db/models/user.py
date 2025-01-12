@@ -30,7 +30,10 @@ def get_user_by_url(user_url : str):
     return res[0]
 
 def get_or_add_current_user(driver: WebDriver):
-    current_user_url = find_current_user_url(driver)
+    if app_settings["user_url"] is None:
+        current_user_url = find_current_user_url(driver)    
+    else:
+        current_user_url = app_settings["user_url"]
     user =  get_user_by_url(current_user_url)
     if user is None:
         user = add_user(current_user_url)

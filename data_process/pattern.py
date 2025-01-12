@@ -1,5 +1,6 @@
 from collections import Counter
 from enum import Enum
+import re
 import threading
 from typing import TypedDict
 import nltk
@@ -56,10 +57,11 @@ def find_top_words(jobs:list[job_post]):
     return top_words
 
 
-excluded_words = [
-    'skills','experience','team','premium','work','development','software','data','set','job','type','see','working','alert','jobs','add','stand','applicant','greece','knowledge'
-    ]
+# excluded_words = [
+#     'skills','experience','team','premium','work','development','software','data','set','job','type','see','working','alert','jobs','add','stand','applicant','greece','knowledge'
+#     ]
 
+excluded_words = ["-#-"]
 
 
 
@@ -115,6 +117,11 @@ def get_word_distribution_union(jobs_to_analyze: list[job_post],excluded_words=e
         dist = {k:v for k,v in dist.items() if v > freq_threshold}
         
     return dist
+
+replaceable_tokens = {
+    "c++": "cplusplus"
+}
+
         
 def get_word_distribution_all_fields_union(jobs_to_analyze: list[job_post],excluded_words=excluded_words,freq_threshold=None):
     stop_words = set(stopwords.words('english'))
@@ -127,20 +134,34 @@ def get_word_distribution_all_fields_union(jobs_to_analyze: list[job_post],exclu
 
     for job in jobs_to_analyze:
         for field in comparable_fields:
-            combined_text_dict[field] += getattr(job,field)
+            combined_text_dict[field] += "  " + getattr(job,field)
     
     dist_dict : AllFieldsDist = {}
     for field in comparable_fields:
         soup = BeautifulSoup(combined_text_dict[field], "html.parser")
         page_text = soup.get_text(separator=' ').lower()
+
+        for token in replaceable_tokens:
+            escaped_token = re.escape(token)
+            regex = rf" {escaped_token} "
+            replaced_token = f" {replaceable_tokens[token]} "
+            page_text = re.sub(regex,replaced_token,page_text,flags=re.IGNORECASE)
+
         tokens = word_tokenize(page_text)
+        
+        # Exclude common words and stop words
         filtered_tokens = [word for word in tokens if word.isalpha() and word.casefold() not in all_excluded_words]
     
+        # Exclude punctuation
         filtered_tokens = [word for word in filtered_tokens if word not in string.punctuation]
 
+        # Convert all to lower case
+        filtered_tokens = [word.lower() for word in filtered_tokens]
+        
+        # Lemmatize words
         filtered_tokens = [lemmatizer.lemmatize(word) for word in filtered_tokens]
 
-        filtered_tokens = [word for word in filtered_tokens if len(word) > 2]
+        # filtered_tokens = [word for word in filtered_tokens if len(word) > 2]
 
         dist = FreqDist(filtered_tokens)
         if freq_threshold:
@@ -212,6 +233,22 @@ def get_word_distribution_multithreaded(jobs_to_analyze: list[job_post],excluded
         thread.join()
 
     return distribution_dict
+
+def all_field_subtraction(distribution1:AllFieldsDist,distribution2:AllFieldsDist):
+    result = AllFieldsDist()
+    all_fields = set(distribution1.keys()) | set(distribution2.keys())
+    for field in all_fields:
+        result[field] = subtract_distributions(distribution1[field],distribution2[field])
+    return result
+
+def subtract_distributions(dist1:FreqDist,dist2:FreqDist):
+    vocab = set(dist1.keys()) | set(dist2.keys())
+    result = FreqDist()
+    for word in vocab:
+        value = dist1.get(word,0) - dist2.get(word,0)
+        # limit to 3 decimal places
+        result[word] =round(value, 3)
+    return result
 
 class InputType(Enum):
     LIST = "list"

@@ -8,29 +8,38 @@ from show_and_choose import show_and_choose
 # | is "or" so a python data engineer or a c++ embedded is:
 # (?=.*python)(?=.*data engineer)|(?=.*c\+\+)(?=.*embedded)
 
-fullText = {
-    "or" : ["Athens|Attiki","hybrid|remote"],
-    "and" : ["back(-|\s)?end","node","remote|hybrid"],
-    "not" : [
-        "7.*years",
-        "front(-|\s)?end",
-],
-    "ignore_case" : True, # Default is True
-    "use_regex" : True # Default is True
-}
+# fullText = {
+#     "or" : ["Athens|Attiki","hybrid|remote"],
+#     "and" : ["back(-|\s)?end","node","remote|hybrid"],
+#     "not" : [
+#         "7.*years",
+#         "front(-|\s)?end",
+# ],
+#     "ignore_case" : True, # Default is True
+#     "use_regex" : True # Default is True
+# }
 
-title :CriteriaConfigField = {
+
+# Refers to job title
+title : CriteriaConfigField = {
     'field_name': "title",
-    "criteria":  {    
-        "not" : ["Angular","Front[ -]?end","React","Manager"]
+    "criteria":  {  
+        "not" : [
+            "Front[ -]?end",
+            "Senior",
+            "Full(-|\s)?stack",
+            "React"
+            ]
     }
 }
+
+
 
 level = {
     "field_name": "level",
     "criteria":  {    
         "not" : [
-            "entry"
+            # "entry"
         ]
     }
 }
@@ -44,14 +53,17 @@ remote = {
     }
 }
 
+
+# Refers to company name
 name = {
     "field_name": "name",
-    "criteria":  {    
+    "criteria":  {  
+        "and" : [],  
         "not" : [
-            "EY",
+            # "EY",
             # "Viva",
-            "Accenture",
-            "Canonical"
+            # "Accenture",
+            # "Canonical"
         ]
     },
     "ignore_case" : False, 
@@ -59,8 +71,20 @@ name = {
 
 description = {
     "field_name": "description",
-    "criteria":  {    
-        "not" : ["php","java","([5-9]|10)\+ years"]
+    "criteria":  {
+        "or" : [
+            "node",
+            "nodejs",
+            "Typescript",
+            "Javascript",
+            "deno",
+        ],
+        "and" :[
+            "back(-|\s)?end"
+            ],
+        "not" : [
+                "angular"
+            ]
     },
     "ignore_case" : True, 
 }
@@ -68,7 +92,9 @@ description = {
 skills = {
     "field_name": "skills_required",
     "criteria":  {    
-        "and" : ["C++"]
+        "and" : [
+            # "C++",
+            ]
     },
     "ignore_case" : True, 
 }
@@ -77,16 +103,17 @@ criteria = Criteria()
 criteria.full = None #fullText
 criteria.fields = [
     title,
+    # level,
     remote,
-    name,
-    # description,
+    # name,
+    description,
     # skills
 ]
 
 
 search=None # None to search in all posts
-filter_name="test_filter"
-delete_cache = False # If True, it will delete the cache and start from scratch
+filter_name="focused_plus"
+delete_cache = True # If True, it will delete the cache and start from scratch
 
 job_list: list[job_post] = filter_search(search,criteria,filter_name)
 

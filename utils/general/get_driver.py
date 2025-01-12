@@ -12,6 +12,7 @@ from selenium.webdriver.remote.webdriver import WebDriver
 import logging
 from selenium.webdriver.remote.remote_connection import LOGGER
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from webdriver_manager.core import driver_cache
 
 def get_driver(settings_override: dict[str, Any] | None = None)-> WebDriver:
     # Values that exist in input should override the original settings
@@ -25,17 +26,22 @@ def get_driver(settings_override: dict[str, Any] | None = None)-> WebDriver:
         options = webdriver.ChromeOptions()
         logging.getLogger('selenium').setLevel(logging.WARNING)
         options.add_argument("--log-level=3")
-        options.headless = app_settings["headless"]
+        if(app_settings["headless"]):
+            options.add_argument("--headless=new")
+        
         options.page_load_strategy = app_settings["load_strategy"]
         options.add_argument(f'--user-agent={random_id}')
         if(app_settings["user_data_dir_chrome"] and os.path.exists(app_settings["user_data_dir_chrome"])):
             options.add_argument(f'--user-data-dir={app_settings["user_data_dir_chrome"]}')
-        service = Service(ChromeDriverManager().install())
+
+        cache_manager = driver_cache.DriverCacheManager(valid_range=0)
+        service = Service(ChromeDriverManager(cache_manager=cache_manager).install())
         driver = webdriver.Chrome(service=service,options=options)
     else:
         profile = webdriver.FirefoxProfile()
         options = Options()
-        options.headless = app_settings["headless"]
+        if(app_settings["headless"]):
+            options.add_argument("--headless=new")
         logging.getLogger('selenium').setLevel(logging.WARNING)
         options.add_argument("--log-level=3")
         options.page_load_strategy = app_settings["load_strategy"]

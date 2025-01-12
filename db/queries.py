@@ -26,6 +26,16 @@ def insert_one(db_class: Type[GenericClass],options = {"insert_or_ignore": True}
     result = run_query(query_string,values)
     return result
 
+def upsert_one(db_class: Type[GenericClass]):
+    columns = get_class_attributes(db_class)
+    values = [getattr(db_class,column) for column in columns]
+    placeholder_values = ["?" for _ in range(len(values))]
+    table_name = db_class.__class__.__name__
+
+    query_string = f'INSERT OR REPLACE INTO {table_name} ({",".join(columns)}) VALUES ({",".join(placeholder_values)}) ;'
+    result = run_query(query_string,values)
+    return result
+
 def find_where(db_class: GenericClass,attribute,value,operator="="):
     table_name = db_class.__name__
     columns = get_class_attributes_without_instance(db_class)
@@ -41,7 +51,7 @@ def find_multiple_where(db_class: GenericClass,clauses :list[WhereClause]):
     query_string = f'SELECT {",".join(columns)} FROM {table_name} where ({where_clause})'
     result = run_query(query_string)
     return serialize_db_response(result,db_class)
-    
+
 def get_class_attributes_without_instance(db_class: GenericClass):
     return list(db_class.__annotations__.keys())
 
